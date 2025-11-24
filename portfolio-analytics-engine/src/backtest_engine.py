@@ -4,117 +4,165 @@ import numpy as np
 from datetime import datetime, timedelta
 
 class BacktestEngine:
-    def __init__(self, lookback_period=252*5):  # 5 years default
+    def __init__(self, lookback_period=252 * 5):  # default: 5 years
         self.lookback_period = lookback_period
-        
+
     def historical_simulation(self, portfolio_weights, price_data, start_date=None, end_date=None):
-        """Run historical simulation"""
+        """
+        Run historical simulation with automatic clamping of lookback period
+        if the available price_data is shorter.
+        """
+        if price_data is None or len(price_data) < 2:
+            raise ValueError("Price data is empty or insufficient for backtesting.")
+
+        # Determine simulation window
         if start_date is None:
-            start_date = price_data.index[-self.lookback_period]
+            available_len = len(price_data)
+            lookback = min(self.lookback_period, available_len - 1)
+            start_date = price_data.index[-lookback]
+
         if end_date is None:
             end_date = price_data.index[-1]
-        
-        # Filter data for simulation period
+
+        # Slice simulation data
         sim_data = price_data.loc[start_date:end_date]
-        
-        # Calculate returns
+
+        # Compute asset returns
         returns = sim_data.pct_change().dropna()
-        
-        # Calculate portfolio returns
+
+        if returns.empty:
+            raise ValueError("Asset returns are empty after pct_change. Not enough valid price data.")
+
+        # Compute portfolio returns
         portfolio_returns = self._calculate_portfolio_returns(returns, portfolio_weights)
-        
-        # Calculate performance metrics
-        results = self._calculate_performance_metrics(portfolio_returns, returns)
-        
+
+        # Compute performance metrics
+        results = self._calculate_performance_metrics(portfolio_returns)
+
+        # Add raw return series
+        results["returns"] = portfolio_returns
+        results["cumulative_returns"] = (1 + portfolio_returns).cumprod()
+
         return results
-    
+
     def _calculate_portfolio_returns(self, returns, portfolio_weights):
-        """Calculate portfolio returns from asset returns and weights"""
-        # Align weights with return columns
-        aligned_weights = np.array([portfolio_weights.get(col, 0) for col in returns.columns])
-        
-        # Calculate portfolio returns
-        portfolio_returns = returns.dot(aligned_weights)
-        
-        return portfolio_returns
-    
-    def _calculate_performance_metrics(self, portfolio_returns, asset_returns):
-        """Calculate comprehensive performance metrics"""
+        """
+        Multiply asset returns by aligned portfolio weights.
+        Missing weights default to 0.
+        """
+        cols = returns.columns
+        aligned_weights = np.array([portfolio_weights.get(asset, 0) for asset in cols])
+
+        # Normalize weights if they don't sum to 1
+        if aligned_weights.sum() != 1:
+            aligned_weights = aligned_weights / aligned_weights.sum()
+
+        return returns.dot(aligned_weights)
+
+    def _calculate_performance_metrics(self, portfolio_returns):
+        """
+        Compute total return, annualized return, volatility, Sharpe ratio, and max drawdown.
+        Uses corrected annualization formulas.
+        """
+        if portfolio_returns.empty:
+            return {
+                "total_return": 0,
+                "annual_return": 0,
+                "volatility": 0,
+                "sharpe_ratio": 0,
+                "max_drawdown": 0
+            }
+
         total_return = (1 + portfolio_returns).prod() - 1
-        annual_return = (1 + total_return) ** (252/len(portfolio_returns)) - 1
+        mean_daily_return = portfolio_returns.mean()
+
+        # Annualized return using correct formula
+        annual_return = (1 + mean_daily_return) ** 252 - 1
+
+        # Annualized volatility
         volatility = portfolio_returns.std() * np.sqrt(252)
-        sharpe_ratio = (annual_return - 0.02) / volatility if volatility > 0 else 0
-        
-        # Maximum drawdown
-        cumulative_returns = (1 + portfolio_returns).cumprod()
-        rolling_max = cumulative_returns.expanding().max()
-        drawdowns = (cumulative_returns - rolling_max) / rolling_max
-        max_drawdown = drawdowns.min()
-        
-        results = {
-            'total_return': total_return,
-            'annual_return': annual_return,
-            'volatility': volatility,
-            'sharpe_ratio': sharpe_ratio,
-            'max_drawdown': max_drawdown,
-            'returns': portfolio_returns,
-            'cumulative_returns': cumulative_returns
+
+        sharpe_ratio = 0
+        if volatility > 0:
+            sharpe_ratio = (annual_return - 0.02) / volatility  # 2% RF rate
+
+        # Max drawdown
+        cumulative = (1 + portfolio_returns).cumprod()
+        rolling_max = cumulative.expanding().max()
+        drawdown = (cumulative - rolling_max) / rolling_max
+        max_drawdown = drawdown.min()
+
+        return {
+            "total_return": total_return,
+            "annual_return": annual_return,
+            "volatility": volatility,
+            "sharpe_ratio": sharpe_ratio,
+            "max_drawdown": max_drawdown
         }
-        
-        return results
-    
+
     def monte_carlo_simulation(self, portfolio_weights, historical_returns, n_simulations=1000, days=252):
-        """Run Monte Carlo simulation for forward-looking analysis"""
-        # Estimate parameters from historical data
+        """
+        Forward-looking Monte Carlo simulations using mean + covariance of asset returns.
+        """
+        if historical_returns is None or len(historical_returns) < 2:
+            raise ValueError("Historical returns are empty or insufficient for Monte Carlo.")
+
         mean_returns = historical_returns.mean()
         cov_matrix = historical_returns.cov()
-        
-        aligned_weights = np.array([portfolio_weights.get(col, 0) for col in historical_returns.columns])
-        
+
+        cols = historical_returns.columns
+        aligned_weights = np.array([portfolio_weights.get(asset, 0) for asset in cols])
+
+        if aligned_weights.sum() != 1:
+            aligned_weights = aligned_weights / aligned_weights.sum()
+
         simulations = []
-        
+
         for _ in range(n_simulations):
-            # Generate correlated random returns
             simulated_returns = np.random.multivariate_normal(mean_returns, cov_matrix, days)
-            
-            # Calculate portfolio performance
             portfolio_path = np.cumprod(1 + simulated_returns.dot(aligned_weights))
             simulations.append(portfolio_path)
-        
+
         simulations = np.array(simulations)
-        
-        # Calculate statistics
         final_values = simulations[:, -1]
-        
-        mc_results = {
-            'expected_return': np.mean(final_values) - 1,
-            'value_at_risk_95': np.percentile(final_values, 5) - 1,
-            'expected_shortfall_95': final_values[final_values <= np.percentile(final_values, 5)].mean() - 1,
-            'simulation_paths': simulations
+
+        return {
+            "expected_return": np.mean(final_values) - 1,
+            "value_at_risk_95": np.percentile(final_values, 5) - 1,
+            "expected_shortfall_95": final_values[final_values <= np.percentile(final_values, 5)].mean() - 1,
+            "simulation_paths": simulations
         }
-        
-        return mc_results
-    
+
     def stress_test(self, portfolio_weights, price_data, stress_periods):
-        """Run stress tests for specific historical periods"""
-        stress_results = {}
-        
+        """
+        Evaluate returns during predefined stress periods (e.g. 2008 crash, COVID crash).
+        """
+        results = {}
+
         for period_name, (start_date, end_date) in stress_periods.items():
             period_data = price_data.loc[start_date:end_date]
             period_returns = period_data.pct_change().dropna()
-            
-            portfolio_stress_returns = self._calculate_portfolio_returns(period_returns, portfolio_weights)
-            
-            stress_results[period_name] = {
-                'total_return': (1 + portfolio_stress_returns).prod() - 1,
-                'max_drawdown': self._calculate_max_drawdown(portfolio_stress_returns),
-                'volatility': portfolio_stress_returns.std() * np.sqrt(252)
+
+            if period_returns.empty:
+                results[period_name] = {
+                    "total_return": 0,
+                    "max_drawdown": 0,
+                    "volatility": 0
+                }
+                continue
+
+            pr = self._calculate_portfolio_returns(period_returns, portfolio_weights)
+
+            results[period_name] = {
+                "total_return": (1 + pr).prod() - 1,
+                "max_drawdown": self._calculate_max_drawdown(pr),
+                "volatility": pr.std() * np.sqrt(252)
             }
-        
-        return stress_results
-    
+
+        return results
+
     def _calculate_max_drawdown(self, returns):
-        """Calculate maximum drawdown for a return series"""
+        """Utility for max drawdown."""
         cumulative = (1 + returns).cumprod()
         rolling_max = cumulative.expanding().max()
         drawdown = (cumulative - rolling_max) / rolling_max

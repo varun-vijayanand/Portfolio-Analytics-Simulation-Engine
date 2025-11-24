@@ -44,7 +44,7 @@ class ReportGenerator:
         summary_df.to_excel(writer, sheet_name='Summary', index=False)
         
         worksheet = writer.sheets['Summary']
-        format_headers(workbook, worksheet, len(summary_df.columns))
+        format_headers(workbook, worksheet, summary_df.columns)
     
     def _create_risk_sheet(self, writer, workbook, results):
         """Create risk metrics sheet"""
@@ -58,7 +58,7 @@ class ReportGenerator:
         risk_df.to_excel(writer, sheet_name='Risk Metrics', index=False)
         
         worksheet = writer.sheets['Risk Metrics']
-        format_headers(workbook, worksheet, len(risk_df.columns))
+        format_headers(workbook, worksheet, risk_df.columns)
     
     def _create_performance_sheet(self, writer, workbook, results):
         """Create performance analysis sheet"""
@@ -82,7 +82,7 @@ class ReportGenerator:
         factor_df.to_excel(writer, sheet_name='Factor Exposures', index=False)
         
         worksheet = writer.sheets['Factor Exposures']
-        format_headers(workbook, worksheet, len(factor_df.columns))
+        format_headers(workbook, worksheet, factor_df.columns)
     
     def generate_pdf_report(self, analysis_results, file_path):
         """Generate PDF risk report"""
@@ -112,15 +112,16 @@ class ReportGenerator:
         
         pdf.output(file_path)
 
-def format_headers(workbook, worksheet, num_cols):
-    """Format Excel worksheet headers"""
+def format_headers(workbook, worksheet, header_names):
     header_format = workbook.add_format({
         'bold': True,
         'text_wrap': True,
         'valign': 'top',
-        'fg_color': '#D7E4BC',
+        'align': 'center',
+        'bg_color': '#DCE6F1',
         'border': 1
     })
-    
-    for col in range(num_cols):
-        worksheet.write(0, col, worksheet.cell(0, col).value, header_format)
+
+    for col, header in enumerate(header_names):
+        worksheet.write(0, col, header, header_format)
+        worksheet.set_column(col, col, 20)

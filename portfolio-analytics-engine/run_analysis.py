@@ -11,15 +11,15 @@ import os
 import sys
 
 # Add src to path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
-from data_ingestion import DataIngestion
-from strategy_checker import StrategyChecker
-from backtest_engine import BacktestEngine
-from risk_metrics import RiskMetrics
-from factor_model import FactorModel
-from report_generator import ReportGenerator
-from issue_logger import IssueLogger
+from src.data_ingestion import DataIngestion
+from src.strategy_checker import StrategyChecker
+from src.backtest_engine import BacktestEngine
+from src.risk_metrics import RiskMetrics
+from src.factor_model import FactorModel
+from src.report_generator import ReportGenerator
+from src.issue_logger import IssueLogger
 
 def main():
     print("🚀 Portfolio Analytics Engine - Starting Analysis")
