@@ -92,7 +92,10 @@ def main():
             'annual_return': historical_results['annual_return'],
             'volatility': historical_results['volatility'],
             'sharpe_ratio': historical_results['sharpe_ratio'],
-            'max_drawdown': historical_results['max_drawdown']
+            'max_drawdown': historical_results['max_drawdown'],
+            # convenience top-level access
+            'returns': historical_results.get('returns'),
+            'cumulative_returns': historical_results.get('cumulative_returns')
         }
         
         # 9. Generate reports
@@ -103,13 +106,21 @@ def main():
         excel_report_path = f'reports/portfolio_analysis_{timestamp}.xlsx'
         report_generator.generate_excel_report(analysis_results, excel_report_path)
         
-        # PDF report
+        # Simple PDF report (existing)
         pdf_report_path = f'reports/risk_report_{timestamp}.pdf'
         report_generator.generate_pdf_report(analysis_results, pdf_report_path)
         
+        # New: Institutional reports (three separate PDFs)
+        blackrock_pdf = report_generator.generate_blackrock_report(analysis_results)
+        jpm_pdf = report_generator.generate_jpm_report(analysis_results)
+        ubs_pdf = report_generator.generate_ubs_report(analysis_results)
+        
         print(f"✅ Analysis completed successfully!")
         print(f"📊 Excel report: {excel_report_path}")
-        print(f"📄 PDF report: {pdf_report_path}")
+        print(f"📄 Simple PDF report: {pdf_report_path}")
+        print(f"📄 BlackRock PDF: {blackrock_pdf}")
+        print(f"📄 JPM PDF: {jpm_pdf}")
+        print(f"📄 UBS PDF: {ubs_pdf}")
         print(f"📈 Total Return: {analysis_results['total_return']:.2%}")
         print(f"⚡ Volatility: {analysis_results['volatility']:.2%}")
         print(f"🎯 Sharpe Ratio: {analysis_results['sharpe_ratio']:.2f}")
