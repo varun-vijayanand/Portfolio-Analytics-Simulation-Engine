@@ -1,0 +1,18 @@
+[
+    {
+        "id": "ISSUE-1763962580",
+        "timestamp": "2025-11-24 05:36:20",
+        "type": "ANALYSIS_ERROR",
+        "severity": "HIGH",
+        "source": "MainAnalysis",
+        "description": "Error during portfolio analysis: 'Worksheet' object has no attribute 'cell'"
+    },
+    {
+        "id": "ISSUE-1763964528",
+        "timestamp": "2025-11-24 06:08:48",
+        "type": "ANALYSIS_ERROR",
+        "severity": "HIGH",
+        "source": "MainAnalysis",
+        "description": "Error during portfolio analysis: 'int' object is not iterable"
+    }
+]

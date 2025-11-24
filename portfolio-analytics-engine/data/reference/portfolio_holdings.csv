@@ -1,0 +1,8 @@
+ticker,quantity,asset_class,sector,country
+AAPL,10,Equity,Technology,USA
+MSFT,5,Equity,Technology,USA
+TSLA,8,Equity,Automotive,USA
+NVDA,12,Equity,Semiconductors,USA
+AMZN,6,Equity,Consumer Discretionary,USA
+META,4,Equity,Communications,USA
+JPM,10,Equity,Financials,USA
