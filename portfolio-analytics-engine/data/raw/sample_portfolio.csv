@@ -1,11 +1,6 @@
 ticker,weight,trade_date,asset_class
-AAPL,0.15,2024-01-15,Equity
-MSFT,0.14,2024-01-15,Equity
-GOOGL,0.13,2024-01-15,Equity
-AMZN,0.12,2024-01-15,Equity
-TSLA,0.1,2024-01-15,Equity
-BRK-B,0.08,2024-01-15,Equity
-JPM,0.07,2024-01-15,Equity
-JNJ,0.06,2024-01-15,Equity
-V,0.08,2024-01-15,Equity
-PG,0.07,2024-01-15,Equity
+AAPL,0.2,2024-01-15,Equity
+MSFT,0.2,2024-01-15,Equity
+GOOGL,0.2,2024-01-15,Equity
+AMZN,0.2,2024-01-15,Equity
+TSLA,0.2,2024-01-15,Equity
