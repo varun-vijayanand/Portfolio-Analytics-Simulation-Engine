@@ -2,77 +2,79 @@
 A 55ip / J.P. Morgan Quant R&amp;D Style Portfolio Analysis Platform
 
 ## Overview
-This project replicates the core responsibilities of a Portfolio Analyst in a Quant R&D team — including portfolio evaluation, risk analysis, strategy alignment checks, historical simulations, and forward-looking modeling.
+The Portfolio Analytics Simulation Engine is a modular, professional-grade analytics platform designed to replicate the core functions of a Portfolio Analyst, Quant Researcher, or Market Risk Analyst in institutional investment teams such as BlackRock, J.P. Morgan, 55ip, UBS, Vanguard, Goldman Sachs, and AQR.
+This engine supports:
+- Portfolio ingestion & validation
+- Historical backtesting
+- Forward-looking simulations
+- Multi-asset risk analytics
+- Factor modeling (Value, Momentum, Size, Quality, Low-Vol)
+- Strategy alignment & drift monitoring
+- Trade impact and turnover modeling
+- SQL-based governance, metadata logging, and reproducibility
+- Institutional-grade PDF report generation (BlackRock → J.P. Morgan → UBS blended format)
+- LLM-powered portfolio narratives
 
-It is inspired by workflows used in 55ip, J.P. Morgan, BlackRock, and similar investment research teams.
-
-The engine supports:
-- Importing multi-asset portfolio data
-- Simulating historical & forward returns
-- Evaluating trade suggestions
-- Monitoring strategy alignment
-- Calculating risk metrics (volatility, beta, VaR, drawdown)
-- Conducting factor exposures (Value, Momentum, Size, Quality)
-- Investigating datasets using SQL
-- Generating automated reports in Excel + Tableau
-- Logging issues (JIRA-style)
-- Documenting operational workflows
+The system is modular, extensible, and capable of being deployed as a desktop tool, pipeline job, or cloud function.
 
 ## Key Features
+### 1. Portfolio Ingestion & Validation
+- CSV loading
+- Corporate actions
+- Metadata creation
 
-### 1. Portfolio Ingestion & Cleaning
-- Load positions: weights, tickers, trade dates
-- Validate constraints
-- Handle corporate actions
-- Generate clean datasets & metadata
+### 2. Strategy Alignment & Drift
+- Tracking error
+- Active weights
+- Drift breach detection
 
-### 2. Strategy Alignment Check
-- Detect deviations vs target strategy
-- Logic for:
-- overweight/underweight detection
-- tracking error
-- drift thresholds
+### 3. Backtesting Engine
+- Rolling windows
+- Portfolio returns
+- Cumulative curves
+- Sharpe, volatility, drawdown
 
-### 3. Backtesting & Simulation
-- Historical simulation (5Y, 10Y, dynamic windows)
-- Forward-looking scenarios:
-- Monte Carlo
-- Regime shifts
-- Stress periods (COVID, GFC, taper tantrum)
-
-### 4. Risk Analysis
-- Volatility
+### 4. Risk Analytics
+- Historical & parametric VaR
+- Expected shortfall
 - Beta vs benchmark
-- Maximum Drawdown
-- Value-at-Risk (parametric & historical)
-- Expected Shortfall
+- Tracking error
+- Information ratio
 
-### 5. Trade Suggestion Analysis
-- Evaluate expected return impact
-- Rebalance logic
-- Turnover & transaction cost modeling
+### 5. Factor Modeling
+- Fama–French
+- AQR-inspired signals
+- Factor exposures
 
-### 6. Factor Exposure Breakdown
-- Based on Fama-French & AQR signals:
-- Value
-- Size
-- Momentum
-- Quality
-- Low Vol
+### 6. Institutional Reporting
+- Multiple professional templates
+- Risk tables
+- Charts
+- Narratives
+- Governance logs
 
-### 7. SQL-Based Dataset Investigation
-- Custom queries
-- Data gap detection
-- Summary stats
+### 7. SQL Metadata Logging
+- Report registry
+- KPI tables
+- Narrative storage
 
-### 8. Reporting Automation
-- Excel reports (XlsxWriter)
-- Tableau data extracts (.hyper)
-- Daily PDF risk report
 
-### 9. Governance & Issue Tracking
-- Automated audit logs
-- JIRA-style JSON issue registry
+## Sample Institutional Report Structure
+1. BlackRock Section
+- Executive summary
+- Portfolio performance
+- Risk overview
+- Cumulative returns chart
+
+2. J.P. Morgan Section
+- Market commentary
+- Benchmark overlays
+- Performance graph
+
+3. UBS Section
+- Risk commentary
+- Growth path visualization
+- Final risk dashboard
 
 
 ## Tech Stack
